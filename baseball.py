@@ -169,10 +169,12 @@ def get_pitching_score(player_id, super_boxscore):
 					if game['status_ind'] == "F" or game['status_ind'] == "O":
 						# are we the home team and did we win? 
 						if h_o_a_pitching['team_flag'] == 'home' and game['home_id'] == player_id:
+							# in baseball, you win if you score more runs than the other team. 
 							if game['linescore']['home_team_runs'] > game['linescore']['away_team_runs']:
 								points += 3
 						# are we the away team and did we win? 
 						if h_o_a_pitching['team_flag'] == 'away' and game['away_id'] == player_id:
+							# in baseball, you win if you score more runs than the other team. 
 							if game['linescore']['away_team_runs'] > game['linescore']['home_team_runs']:
 								points += 3
 					
@@ -281,8 +283,8 @@ def process_schedule_data(schedule_data):
 			this_week[matchup["matchup_set"]]['period_id'] = matchup["period_id"]
 		
 		# start putting together a data set for completed weeks
+		# This can be used to generate graphs and stats for weekly scores. 
 		# key: period_id minus 10 (first period is 11, so this makes it "week 1")
-		# value: dictionary {teamid=1234 1=208 2=197 ... total=405 }
 		# will need to return a second value from process_schedule_data
 		#if matchup["is_final"] == "y":
 		
@@ -302,7 +304,7 @@ def get_roster_data_for_team(team_id, period_id):
 # returns:
 # this_week (modified)
 # ultimately this function is helping update this_week with the total points for the live day
-def get_player_points_2(h_o_a, roster_data, this_week, match, super_boxscore):
+def get_player_points_for_today(h_o_a, roster_data, this_week, match, super_boxscore):
 	
 	#team_array = []
 	# create a spot in the dictionary for team lineup data
@@ -349,12 +351,14 @@ def get_player_points_this_week(this_week, super_boxscore):
 				
 		# home team ======================================
 		roster_data = get_roster_data_for_team(this_week[match]['home_team'], this_week[match]['period_id'])
-		this_week = get_player_points_2('home', roster_data, this_week, match, super_boxscore)
+		# get today's player points
+		this_week = get_player_points_for_today('home', roster_data, this_week, match, super_boxscore)
 		#===================================================
 		
 		# away team ======================================
 		roster_data = get_roster_data_for_team(this_week[match]['away_team'], this_week[match]['period_id'])
-		this_week = get_player_points_2('away', roster_data, this_week, match, super_boxscore)
+		# get today's player points
+		this_week = get_player_points_for_today('away', roster_data, this_week, match, super_boxscore)
 		#===================================================
 	
 	return this_week
