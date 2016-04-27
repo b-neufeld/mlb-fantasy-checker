@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import json, urllib, urllib2, pprint, re, sys, datetime, time, threading
+import json, urllib, urllib2, pprint, re, datetime, time, threading
 from threading import Thread
 
 ########################
@@ -40,18 +40,14 @@ def get_todays_gid_xml_blob():
 	# gid_[0-9]{4}_[0-9]{2}_[0-9]{2}[a-z0-9_]*
 	# list/set functions removes duplicate values - we expect identical values for each since we're parsing html
 	# reference: http://stackoverflow.com/questions/7961363/removing-duplicates-in-lists
-	
 	gid_list = list(set(re.findall('gid_[0-9]{4}_[0-9]{2}_[0-9]{2}[a-z0-9_]*', data)))
-	
-	# debug 
-	#pp = pprint.PrettyPrinter(indent=4)
-	#pp.pprint(gid_list)
 	
 	return gid_list
 	
 # this is a smashing together of these 2 stackoverflow posts:
 # http://stackoverflow.com/questions/3472515/python-urllib2-urlopen-is-slow-need-a-better-way-to-read-several-urls
 # http://stackoverflow.com/questions/1726402/in-python-how-do-i-use-urllib-to-see-if-a-website-is-404-or-200
+# this function is called by the threading function to grab a bunch of boxscores simultaneously. 
 def read_url(url, results, index):
 	try:
 		response = urllib2.urlopen(url)
@@ -66,6 +62,9 @@ def read_url(url, results, index):
 		data_1 = json.loads(data)
 		results[index] = data_1["data"]["boxscore"]
 	
+# inputs: list of gid URLs 
+# outputs: 
+#	- A python array where every value is a dictionary of a game (JSON data).  
 def build_monster_boxscore(gid_list):
 	y,m,d=return_today()
 	
@@ -75,48 +74,50 @@ def build_monster_boxscore(gid_list):
 	# this is the monster array that all boxscore.jsons are going to be loaded into. 
 	game_array = []
 	
-	# 
+	# for every gid detected today, build a URL
 	for game in gid_list:
 		urls_to_load.append("http://gd2.mlb.com/components/game/mlb/year_"+y+"/month_"+m+"/day_"+d+"/"+game+"/boxscore.json")
 		game_array.append(game)
 	
-	# debug
-	#print urls_to_load
-	
+	# define an array of empty dictionaries to store results in. 
 	results = [{} for x in game_array]
 	
 	# define array for parallel threads
 	threads = []
 	
+	# for every URL...
 	for ii in range(len(urls_to_load)):
-		# create a process to thread
+		# create a process variable to thread
+		# pass it a URL, the results array, and the index to store it in results
 		process = Thread(target=read_url, args = [urls_to_load[ii], results, ii])
 		# start the process as a thread
 		process.start()
 		# add this process to list of threads. 
 		threads.append(process)
-		
+	
+	# for every process we've started... 	
 	for process in threads:
 		# the join command "joins" all of the started threads, ensuring the program does 
 		# not move on until all of the URLs are processed. 
 		process.join()
 	
-	# debugging
-	#pp = pprint.PrettyPrinter(indent=4)
-	#pp.pprint(results)
-	
 	return results
 	
-	
+# function to return a batter's fantasy points for the day (int) 
+# inputs: player_id (int), super_boxscore (monster array) 	
 def get_batter_score(player_id, super_boxscore):
+	#define points
 	points = 0
 	
-	# this should total points for any number of games that a batter plays. 
+	# get total points for any number of games that a batter plays. 
 	for game in super_boxscore:
 		# check for empty dictionary (games that haven't started yet) and ignore. 
 		if len(game) <> 0:
+			# look at both home and away games in the batting dictionary
 			for h_o_a in game['batting']:
+				# look at every batter 
 				for batter in h_o_a['batter']:
+					# if the player_id exists in the game, calculate their stats
 					if batter['id'] == player_id:
 						# calculate points per batter from here: http://www.mlb.com/mlb/fantasy/fb/info/rules.jsp
 						# boxscore.json counts doubles and everything else as hits so we have to subtract
@@ -132,6 +133,8 @@ def get_batter_score(player_id, super_boxscore):
 
 	return int(points)
 	
+# function to return a pitching staff's fantasy points for the day 
+# inputs: player_id, super_boxscore (monster array) 
 def get_pitching_score(player_id, super_boxscore):
 	points = int(0)
 		
@@ -140,6 +143,7 @@ def get_pitching_score(player_id, super_boxscore):
 		
 		# check for empty dictionary (games that haven't started yet) and ignore. 
 		if len(game) <> 0:
+			# check both home and away rosters in the pitching dictionary
 			for h_o_a_pitching in game['pitching']:
 				
 				# zero these variables when looping through every game. 
@@ -147,6 +151,9 @@ def get_pitching_score(player_id, super_boxscore):
 				hits_plus_walks = int(0)
 				earned_runs = int(0)
 				
+				# We want to calculate points in one of two situations:
+				# team_flag is HOME and we're the HOME team
+				# team_flag is AWAY and we're the AWAY team
 				if (h_o_a_pitching['team_flag'] == 'home' and game['home_id'] == player_id) or (h_o_a_pitching['team_flag'] == 'away' and game['away_id'] == player_id):
 					# strikeots
 					strikeouts += int(h_o_a_pitching['so'])
@@ -156,13 +163,18 @@ def get_pitching_score(player_id, super_boxscore):
 					earned_runs += int(h_o_a_pitching['er'])
 					
 					# check for win
+					# "F" appears to be FINAL
+					# "O" appears to be OVER (but not final) 
+					# Might be additional cases to check for with postponments, delays etc. 
 					if game['status_ind'] == "F" or game['status_ind'] == "O":
 						# are we the home team and did we win? 
 						if h_o_a_pitching['team_flag'] == 'home' and game['home_id'] == player_id:
+							# in baseball, you win if you score more runs than the other team. 
 							if game['linescore']['home_team_runs'] > game['linescore']['away_team_runs']:
 								points += 3
 						# are we the away team and did we win? 
 						if h_o_a_pitching['team_flag'] == 'away' and game['away_id'] == player_id:
+							# in baseball, you win if you score more runs than the other team. 
 							if game['linescore']['away_team_runs'] > game['linescore']['home_team_runs']:
 								points += 3
 					
@@ -271,8 +283,8 @@ def process_schedule_data(schedule_data):
 			this_week[matchup["matchup_set"]]['period_id'] = matchup["period_id"]
 		
 		# start putting together a data set for completed weeks
+		# This can be used to generate graphs and stats for weekly scores. 
 		# key: period_id minus 10 (first period is 11, so this makes it "week 1")
-		# value: dictionary {teamid=1234 1=208 2=197 ... total=405 }
 		# will need to return a second value from process_schedule_data
 		#if matchup["is_final"] == "y":
 		
@@ -292,7 +304,7 @@ def get_roster_data_for_team(team_id, period_id):
 # returns:
 # this_week (modified)
 # ultimately this function is helping update this_week with the total points for the live day
-def get_player_points_2(h_o_a, roster_data, this_week, match, super_boxscore):
+def get_player_points_for_today(h_o_a, roster_data, this_week, match, super_boxscore):
 	
 	#team_array = []
 	# create a spot in the dictionary for team lineup data
@@ -339,12 +351,14 @@ def get_player_points_this_week(this_week, super_boxscore):
 				
 		# home team ======================================
 		roster_data = get_roster_data_for_team(this_week[match]['home_team'], this_week[match]['period_id'])
-		this_week = get_player_points_2('home', roster_data, this_week, match, super_boxscore)
+		# get today's player points
+		this_week = get_player_points_for_today('home', roster_data, this_week, match, super_boxscore)
 		#===================================================
 		
 		# away team ======================================
 		roster_data = get_roster_data_for_team(this_week[match]['away_team'], this_week[match]['period_id'])
-		this_week = get_player_points_2('away', roster_data, this_week, match, super_boxscore)
+		# get today's player points
+		this_week = get_player_points_for_today('away', roster_data, this_week, match, super_boxscore)
 		#===================================================
 	
 	return this_week
