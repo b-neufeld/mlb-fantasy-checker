@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import json, urllib, urllib2, pprint, re, sys, datetime, time, threading, Queue
+import json, urllib, urllib2, pprint, re, sys, datetime, time, threading
 from threading import Thread
 
 ########################
