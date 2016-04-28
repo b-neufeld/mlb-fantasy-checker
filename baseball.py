@@ -386,7 +386,7 @@ def print_lineup(lineup):
 				print '</span><br>'
 				# this is how we don't double-print any outfielders 
 				printed_players.append(lineup[player]['name'])
-		print '</details></td>'
+	print '</details></td>'
 
 ###################################################
 # START OF THE MEAT'N'POTATOES PART OF THE SCRIPT #
