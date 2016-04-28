@@ -368,13 +368,14 @@ def get_player_points_this_week(this_week, super_boxscore):
 def print_lineup(lineup):
 	
 	print '<details>Today\'s Lineup & Scores<br>'
+	print(lineup)
 	for player in lineup:
 		print '<span class="player">'
-		print str(playerplayer['name']) 
+		print str(lineup[player]['name']) 
 		print ' - '
-		print str(player['position']) 
+		print str(lineup[player]['position']) 
 		print ' - '
-		print str(player['points']) 
+		print str(lineup[player]['points']) 
 		print '</span><br>'
 	print '</details></td>'
 
@@ -434,34 +435,14 @@ for matchup in this_week:
 	print '</a>'
 	print ' - <b>' + str(this_week[matchup]['away_points']) + '</b></summary>'
 	print_lineup(this_week[matchup]['away_lineup'])
-	'''
-	print '<details>Today\'s Lineup & Scores<br>'
-	for player in this_week[matchup]['away_lineup']:
-		print '<span class="player">'
-		print str(this_week[matchup]['away_lineup'][player]['name']) 
-		print ' - '
-		print str(this_week[matchup]['away_lineup'][player]['position']) 
-		print ' - '
-		print str(this_week[matchup]['away_lineup'][player]['points']) 
-		print '</span><br>'
-	print '</details></td>'
-	'''
+	
 	# home team data
 	print '<td class="text-left" width="300px">'
 	print '<summary><b>' + str(this_week[matchup]['home_points']) + ' - </b>'
 	print '<a href="http://www.mlb.com/mlb/fantasy/fb/team/index.jsp?team_id=' + str(this_week[matchup]['home_team']) + '">'
 	print this_week[matchup]['home_name']
 	print '</a></summary>'
-	print '<details>Today\'s Lineup & Scores<br>'
-	for player in this_week[matchup]['home_lineup']:
-		print '<span class="player">'
-		print str(this_week[matchup]['home_lineup'][player]['points']) 
-		print ' - '
-		print str(this_week[matchup]['home_lineup'][player]['position']) 
-		print ' - '
-		print str(this_week[matchup]['home_lineup'][player]['name']) 
-		print '</span><br>'
-	print '</details></td>'
+	print_lineup(this_week[matchup]['home_lineup'])	
 	print '</td>'
 	
 	# row closer
