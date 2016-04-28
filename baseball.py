@@ -367,17 +367,26 @@ def get_player_points_this_week(this_week, super_boxscore):
 # h_o_a = 'home' or 'away'
 def print_lineup(lineup):
 	
+	# print lineup positions in this order. 
+	print_order = ['C','1B','2B','3B','SS','OF','OF','OF','Util','PS']
+	# track printed players so we don't double print the outfielders
+	printed_players = []
+	
 	print '<details>Today\'s Lineup & Scores<br>'
-	print(lineup)
-	for player in lineup:
-		print '<span class="player">'
-		print str(lineup[player]['name']) 
-		print ' - '
-		print str(lineup[player]['position']) 
-		print ' - '
-		print str(lineup[player]['points']) 
-		print '</span><br>'
-	print '</details></td>'
+	
+	for i in range(len(print_order)):
+		for player in lineup:
+			if print_order[i] == lineup[player]['position'] and lineup[player]['name'] not in printed_players:	
+				print '<span class="player">'
+				print str(lineup[player]['name']) 
+				print ' - '
+				print str(lineup[player]['position']) 
+				print ' - '
+				print str(lineup[player]['points']) 
+				print '</span><br>'
+				# this is how we don't double-print any outfielders 
+				printed_players.append(lineup[player]['name'])
+		print '</details></td>'
 
 ###################################################
 # START OF THE MEAT'N'POTATOES PART OF THE SCRIPT #
