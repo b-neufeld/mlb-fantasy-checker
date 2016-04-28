@@ -442,7 +442,7 @@ print '</tbody> </table>';
 
 print '<div> <h4>REFRESH PAGE TO RELOAD SCORES</h4> </div>'
 
-print '<div> <h4><a class="footer" href="about.txt">about.txt</a></h4> </div>'
+print '<div> <h4><a class="footer" href="https://github.com/b-neufeld/mlb-fantasy-checker">about & source</a></h4> </div>'
 
 timing_log.append(['step 4 (end of script): ' + str(datetime.datetime.now() - start_time)])
 
