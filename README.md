@@ -1,5 +1,6 @@
 # mlb-fantasy-checker
-Scripts for querying and displaying MLB.com's publicly-accessible data to display stats for your MLB.com fantasy baseball league. 
+Scripts for querying and displaying MLB.com's publicly-accessible data 
+to display stats for your MLB.com fantasy baseball league. 
 
 MLB Better Fantasy Stats by Brahm Neufeld
 
@@ -12,6 +13,10 @@ Because:
 	  only served (not stored).
 	  
 ================= CHANGE LOG =================
+
+2016-04-26
+- Refactoring, code comments
+- Set up a github repo https://github.com/b-neufeld/mlb-fantasy-checker
 
 2016-04-24
 - Multi-threaded most of the necessary HTTP requests to 
