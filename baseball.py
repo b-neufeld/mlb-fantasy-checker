@@ -364,8 +364,8 @@ def get_player_points_this_week(this_week, super_boxscore):
 	return this_week
 
 # this function prints the lineup for the home or away team.
-# h_o_a = 'home' or 'away'
-def print_lineup(lineup):
+# h_o_a = 'home' or 'away', affects what order things are printed
+def print_lineup(lineup, h_o_a):
 	
 	# print lineup positions in this order. 
 	print_order = ['C','1B','2B','3B','SS','OF','OF','OF','Util','PS']
@@ -378,11 +378,21 @@ def print_lineup(lineup):
 		for player in lineup:
 			if print_order[i] == lineup[player]['position'] and lineup[player]['name'] not in printed_players:	
 				print '<span class="player">'
-				print str(lineup[player]['name']) 
+				
+				if h_o_a == 'away':
+					print str(lineup[player]['name']) 
+				if h_o_a == 'home':
+					print str(lineup[player]['points'])
+				
 				print ' - '
 				print str(lineup[player]['position']) 
 				print ' - '
-				print str(lineup[player]['points']) 
+				
+				if h_o_a == 'away':
+					print str(lineup[player]['points']) 
+				if h_o_a == 'home':
+					print str(lineup[player]['name'])
+				
 				print '</span><br>'
 				# this is how we don't double-print any outfielders 
 				printed_players.append(lineup[player]['name'])
@@ -443,7 +453,7 @@ for matchup in this_week:
 	print this_week[matchup]['away_name']
 	print '</a>'
 	print ' - <b>' + str(this_week[matchup]['away_points']) + '</b></summary>'
-	print_lineup(this_week[matchup]['away_lineup'])
+	print_lineup(this_week[matchup]['away_lineup'], 'away')
 	
 	# home team data
 	print '<td class="text-left" width="300px">'
@@ -451,7 +461,7 @@ for matchup in this_week:
 	print '<a href="http://www.mlb.com/mlb/fantasy/fb/team/index.jsp?team_id=' + str(this_week[matchup]['home_team']) + '">'
 	print this_week[matchup]['home_name']
 	print '</a></summary>'
-	print_lineup(this_week[matchup]['home_lineup'])	
+	print_lineup(this_week[matchup]['home_lineup'], 'home')	
 	print '</td>'
 	
 	# row closer
