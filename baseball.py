@@ -362,8 +362,21 @@ def get_player_points_this_week(this_week, super_boxscore):
 		#===================================================
 	
 	return this_week
-	
 
+# this function prints the lineup for the home or away team.
+# h_o_a = 'home' or 'away'
+def print_lineup(lineup):
+	
+	print '<details>Today\'s Lineup & Scores<br>'
+	for player in lineup:
+		print '<span class="player">'
+		print str(playerplayer['name']) 
+		print ' - '
+		print str(player['position']) 
+		print ' - '
+		print str(player['points']) 
+		print '</span><br>'
+	print '</details></td>'
 
 ###################################################
 # START OF THE MEAT'N'POTATOES PART OF THE SCRIPT #
@@ -420,6 +433,8 @@ for matchup in this_week:
 	print this_week[matchup]['away_name']
 	print '</a>'
 	print ' - <b>' + str(this_week[matchup]['away_points']) + '</b></summary>'
+	print_lineup(this_week[matchup]['away_lineup'])
+	'''
 	print '<details>Today\'s Lineup & Scores<br>'
 	for player in this_week[matchup]['away_lineup']:
 		print '<span class="player">'
@@ -430,7 +445,7 @@ for matchup in this_week:
 		print str(this_week[matchup]['away_lineup'][player]['points']) 
 		print '</span><br>'
 	print '</details></td>'
-	
+	'''
 	# home team data
 	print '<td class="text-left" width="300px">'
 	print '<summary><b>' + str(this_week[matchup]['home_points']) + ' - </b>'
