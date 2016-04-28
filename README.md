@@ -14,6 +14,9 @@ Because:
 	  
 ================= CHANGE LOG =================
 
+2016-04-27
+- Players now print in a consistent order. 
+
 2016-04-26
 - Refactoring, code comments
 - Set up a github repo https://github.com/b-neufeld/mlb-fantasy-checker
