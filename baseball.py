@@ -451,8 +451,11 @@ def print_headers(jscode):
 	      
 	      var options = {
 	          title: 'Fantasy Baseball',
-	          legend: { position: 'bottom' }
-	         
+	          legend: { position: 'right' },
+	          hAxis: { viewWindowMode: 'maximized',
+	          			allowContainerBoundaryTextCufoff: 'true' },
+	          vAxis: { viewWindowMode: 'maximized',
+	          			allowContainerBoundaryTextCufoff: 'true' }
        		 };
         
 	      chart.draw(jscode_data, options);
@@ -502,7 +505,7 @@ completed_weeks = []
 
 for week in score_chart_data:
 	if week is not all_zeros:
-		week.insert(0,score_chart_data.index(week)+1)
+		week.insert(0,"Week " + str(score_chart_data.index(week)+1))
 		completed_weeks.append(week)
 		
 #debug
