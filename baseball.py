@@ -297,10 +297,12 @@ def process_schedule_data(schedule_data):
 		# team_name
 		# period_name
 		# team_points
+		# period_id - subtract 10 because week 1 is period_id=11
 		if matchup['is_final'] == 'y':
 			data = dict([ ('team_name', matchup['team_name']),
 						('period_name', matchup['period_name']),
-						 ('team_points', int(matchup['team_points']))] )
+						 ('team_points', int(matchup['team_points'])),
+					 ('period_id', int(matchup['period_id'])-10)])
 			score_chart_data.append(data)
 	
 	# debug 
@@ -463,18 +465,19 @@ timing_log.append(['step 2 (after process schedule data): ' + str(datetime.datet
 # testing google chart data
 description = {"team_name": ("string", "Team"),
                "team_points": ("number", "Points"),
-               "period_name": ("string", "Week")}
+               "period_name": ("string", "WeekName"),
+               "period_id": ("number", "Week")}
 
 data_table = gviz_api.DataTable(description)
 data_table.LoadData(score_chart_data)
 
 # Create a JavaScript code string.
 jscode = data_table.ToJSCode("jscode_data",
-                             columns_order=("period_name", "team_name", "team_points"),
+                             columns_order=("period_name", "team_name", "team_points", "period_id"),
                              order_by="team_name")
 # Create a JSON string.
-myjson = data_table.ToJSon(columns_order=("team_name", "team_points"),
-                             order_by="period_name")
+myjson = data_table.ToJSon(columns_order=("team_name", "team_points", "period_id"),
+                             order_by="period_id")
 
 # now print headers
 print_headers(jscode, myjson)
@@ -542,8 +545,6 @@ print '-->'
 print '<div> <h4> Loaded in ' + str(datetime.datetime.now() - start_time) + '</h4></div>'
 
 # Put the JS code and JSON string into the template.
-print "Content-type: text/html"
-print
 print """
 <H1>Table created using ToJSCode</H1>
     <div id="table_div_jscode"></div>
