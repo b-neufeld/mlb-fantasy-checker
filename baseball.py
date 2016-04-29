@@ -432,18 +432,23 @@ def print_headers(jscode, myjson):
 	
 	print """
 	<script src="https://www.google.com/jsapi" type="text/javascript"></script>
-	  <script>
-	    google.load('visualization', '1', {packages:['table']});
-	
-	    google.setOnLoadCallback(drawTable);
-	    function drawTable() {
+	<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+	  <script type="text/javascript">
+	    google.charts.load('current', {'packages':['corechart']});
+      	google.charts.setOnLoadCallback(drawChart);
+	    
+	    function drawChart() {
 	      %(jscode)s
-	      var jscode_table = new google.visualization.Table(document.getElementById('table_div_jscode'));
-	      jscode_table.draw(jscode_data, {showRowNumber: true});
-	
-	      var json_table = new google.visualization.Table(document.getElementById('table_div_json'));
-	      var json_data = new google.visualization.DataTable(%(myjson)s, 0.6);
-	      json_table.draw(json_data, {showRowNumber: true});
+	      
+	      var chart = new google.visualization.LineChart(document.getElementById('table_div_jscode'));
+	      
+	      var options = {
+	          title: 'Fantasy Baseball',
+	          legend: { position: 'bottom' }
+       		 };
+        
+	      chart.draw(jscode_data, options);
+	      
 	    }
 	  </script>
 	""" % vars()
