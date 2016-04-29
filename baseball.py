@@ -285,13 +285,27 @@ def process_schedule_data(schedule_data):
 			# in all cases, make sure the period_id is properly assigned. This is a requirement to look up fantasy rosters. 
 			this_week[matchup["matchup_set"]]['period_id'] = matchup["period_id"]
 		
-		# start putting together a data set for completed weeks
-		# This can be used to generate graphs and stats for weekly scores. 
-		# key: period_id minus 10 (first period is 11, so this makes it "week 1")
-		# will need to return a second value from process_schedule_data
-		if matchup["is_final"] == "y":
-			score_chart_data['end_data']
-		
+	# start putting together a data set for completed weeks
+	# This can be used to generate graphs and stats for weekly scores. 
+	# key: period_id minus 10 (first period is 11, so this makes it "week 1")
+	# will need to return a second value from process_schedule_data
+	score_chart_data = []
+	
+	for matchup in schedule_data:
+		# remove fields I don't need for the chart
+		# the fields we KEEP are:
+		# team_name
+		# period_name
+		# team_points
+		if matchup['is_final'] == 'y':
+			data = dict([ ('team_name', matchup['team_name']),
+						('period_name', matchup['period_name']),
+						 ('team_points', matchup['team_points'])] )
+			score_chart_data.append(data)
+	
+	# debug 
+	print score_chart_data
+	
 	return this_week
 	
 # grab a roster json object from mlb and return it 
