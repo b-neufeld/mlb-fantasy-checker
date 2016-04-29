@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import json, urllib, urllib2, pprint, re, datetime, time, threading
+import json, urllib, urllib2, pprint, re, datetime, time, threading, gviz_api
 from threading import Thread
 
 ########################
@@ -247,6 +247,9 @@ def get_schedule_data(league_id):
 # 		away_name
 def process_schedule_data(schedule_data):
 	
+	# define dictionary for score chart 
+	score_chart_data = {}
+	
 	# loop through each and every season's matchup returned from the json data
 	for matchup in schedule_data:
 		
@@ -286,7 +289,8 @@ def process_schedule_data(schedule_data):
 		# This can be used to generate graphs and stats for weekly scores. 
 		# key: period_id minus 10 (first period is 11, so this makes it "week 1")
 		# will need to return a second value from process_schedule_data
-		#if matchup["is_final"] == "y":
+		if matchup["is_final"] == "y":
+			score_chart_data['end_data']
 		
 	return this_week
 	

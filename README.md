@@ -7,12 +7,14 @@ MLB Better Fantasy Stats by Brahm Neufeld
 I believe this project complies with MLB.com's copyright terms posted here:
 http://gdx.mlb.com/components/copyright.txt
 Because:
-	- This is, and will remain, a non-commercial project
-	- It is accessed by and designed for (12) individuals (in our league)
-	- It does not scrape data in bulk, and the data it does collect is 
-	  only served (not stored).
+- This is, and will remain, a non-commercial project
+- It is accessed by and designed for (12) individuals who have to host the script somewhere. 
+- It does not scrape data in bulk, and the data it does collect is only served (not stored).
 	  
 ================= CHANGE LOG =================
+
+2016-04-28
+- Starting to work on Google Charts API
 
 2016-04-27
 - Players now print in a consistent order. 
@@ -47,12 +49,3 @@ daily player totals
 
 2016-04-19
 - Project started, basic version up and running 
-	
-================= TODO LIST =================
-
-- Make source code downloadable in a .zip, url to be shared in this txt
-
-- Charts or graphs using Google chart API? Probably works great on mobile! 
-Can get all required data from schedule.json
-
-- Indicate completed games.
