@@ -452,9 +452,10 @@ def print_headers(jscode):
 	      var options = {
 	          title: 'Fantasy Baseball',
 	          curveType: 'function',
+
 	          legend: { position: 'bottom' },
 	          hAxis: { viewWindowMode: 'maximized',
-	          			allowContainerBoundaryTextCufoff: 'true' },
+	          			allowContainerBoundaryTextCufoff: true },
 	          vAxis: { viewWindowMode: 'maximized',
 	          			allowContainerBoundaryTextCufoff: 'true' }
        		 };
@@ -520,8 +521,8 @@ for week in completed_weeks:
 			if week.index(team_score) > 0:
 				#print team_score + completed_weeks[completed_weeks.index(week)-1][week.index(team_score)]
 				completed_weeks[completed_weeks.index(week)][week.index(team_score)] = team_score + completed_weeks[completed_weeks.index(week)-1][week.index(team_score)]
-			
-	
+				# try calculating points lead
+				#completed_weeks[completed_weeks.index(week)][week.index(team_score)] = max(week) - team_score + completed_weeks[completed_weeks.index(week)-1][week.index(team_score)]
 	
 #debug
 #print completed_weeks		
