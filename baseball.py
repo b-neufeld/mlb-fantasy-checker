@@ -451,7 +451,7 @@ def print_headers(jscode):
 	      
 	      var options = {
 	          title: 'Fantasy Baseball',
-	          legend: { position: 'right' },
+	          legend: { position: 'bottom' },
 	          hAxis: { viewWindowMode: 'maximized',
 	          			allowContainerBoundaryTextCufoff: 'true' },
 	          vAxis: { viewWindowMode: 'maximized',
@@ -507,7 +507,21 @@ for week in score_chart_data:
 	if week is not all_zeros:
 		week.insert(0,"Week " + str(score_chart_data.index(week)+1))
 		completed_weeks.append(week)
-		
+
+#print completed_weeks
+#print completed_weeks[0][1]
+
+# calculate running totals
+for week in completed_weeks:
+	#print completed_weeks.index(week)
+	if completed_weeks.index(week) > 0:
+		for team_score in week:
+			if week.index(team_score) > 0:
+				#print team_score + completed_weeks[completed_weeks.index(week)-1][week.index(team_score)]
+				completed_weeks[completed_weeks.index(week)][week.index(team_score)] = team_score + completed_weeks[completed_weeks.index(week)-1][week.index(team_score)]
+			
+	
+	
 #debug
 #print completed_weeks		
 
