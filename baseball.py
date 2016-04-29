@@ -487,19 +487,7 @@ description = [("week1","number"),
 			("week9","number"),
 			("week10","number"),
 			("week11","number"),
-			("week12","number"),
-			("week13","number"),
-			("week14","number"),
-			("week15","number"),
-			("week16","number"),
-			("week17","number"),
-			("week18","number"),
-			("week19","number"),
-			("week20","number"),
-			("week21","number"),
-			("week22","number"),
-			("week23","number"),
-			("week24","number")]
+			("week12","number")]
 
 data_table = gviz_api.DataTable(description)
 # remove first row because it's a list of strings (team names)
@@ -509,10 +497,10 @@ data_table.LoadData(score_chart_data)
 
 # Create a JavaScript code string.
 jscode = data_table.ToJSCode("jscode_data",
-                             columns_order=("week1", "week2", "week3", "week4", "week5", "week6", "week7", "week8", "week9", "week10", "week11", "week12", "week13", "week14", "week15", "week16", "week17", "week18", "week19", "week20", "week21", "week22", "week23", "week24"),
+                             columns_order=("week1", "week2", "week3", "week4", "week5", "week6", "week7", "week8", "week9", "week10", "week11", "week12" ),
                              )
 # Create a JSON string.
-myjson = data_table.ToJSon(columns_order=("week1", "week2", "week3", "week4", "week5", "week6", "week7", "week8", "week9", "week10", "week11", "week12", "week13", "week14", "week15", "week16", "week17", "week18", "week19", "week20", "week21", "week22", "week23", "week24"),
+myjson = data_table.ToJSon(columns_order=("week1", "week2", "week3", "week4", "week5", "week6", "week7", "week8", "week9", "week10", "week11", "week12"),
                              )
 
 # now print headers
