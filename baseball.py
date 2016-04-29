@@ -453,11 +453,11 @@ def print_headers(jscode):
 	          title: 'Fantasy Baseball Points Back (Lower = Better)',
 	          curveType: 'function',
 
-	          legend: { position: 'bottom' },
+	          legend: { position: 'right' },
 	          hAxis: { viewWindowMode: 'maximized',
-	          			allowContainerBoundaryTextCufoff: true },
-	          vAxis: { viewWindowMode: 'maximized',
-	          			allowContainerBoundaryTextCufoff: 'true' }
+	          			minValue: '1', 
+	          			viewWindow: {min:'1'}},
+	          vAxis: { viewWindowMode: 'maximized'}
        		 };
         
 	      chart.draw(jscode_data, options);
@@ -534,43 +534,6 @@ for week in points_back:
 	
 	for team_points in week[1:]:
 		points_back[points_back.index(week)][week.index(team_points)] = max_week - team_points
-
-#print points_back
-''' DELETE ALL THIS ONCE POINTS BACK IS WORKING 
-#calculate max for this week
-max_week = max(week[1:])
-min_week = min(week[1:])
-#calculate points back for the rest
-# week 0
-if completed_weeks.index(week) == 0:
-	for team_score in week[1:]:
-		completed_weeks[completed_weeks.index(week)][week.index(team_score)] = max_week - team_score
-		print max_week, team_score, max_week - team_score
-# week > 0 - make sure the points back carries
-if completed_weeks.index(week) > 0:
-	for team_score in week[1:]:
-		#points back last week
-		pb_last_week = completed_weeks[completed_weeks.index(week)-1][week.index(team_score)]
-		
-		print pb_last_week, team_score, max_week-team_score, pb_last_week+(max_week-team_score)
-		
-		
-		completed_weeks[completed_weeks.index(week)][week.index(team_score)] = max_week - abs(pb_last_week-team_score)
-print'---'
-
-if completed_weeks.index(week) > 0:
-	for team_score in week:
-		
-		print max_week
-		if week.index(team_score) > 0:
-			pass
-			#print team_score + completed_weeks[completed_weeks.index(week)-1][week.index(team_score)]
-			completed_weeks[completed_weeks.index(week)][week.index(team_score)] = team_score + completed_weeks[completed_weeks.index(week)-1][week.index(team_score)]
-			# try calculating points lead
-			#completed_weeks[completed_weeks.index(week)][week.index(team_score)] = max(week) - team_score + completed_weeks[completed_weeks.index(week)-1][week.index(team_score)]
-'''
-#debug
-#print completed_weeks		
 
 # set up Google Charts gviz_api chart info. 
 data_table = gviz_api.DataTable(description)
@@ -650,7 +613,7 @@ if 1==1:
 	# Put the JS code and JSON string into the template.
 	print """
 	
-	    <div id="table_div_jscode" style="width: 100%; height: 600px"></div>
+	    <div id="table_div_jscode" style="width: 100%; height: 600px" ></div>
 	 """
 	
 	#===========PUT CONTENT ABOVE THIS POINT
