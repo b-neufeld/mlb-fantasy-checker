@@ -463,15 +463,15 @@ timing_log.append(['step 2 (after process schedule data): ' + str(datetime.datet
 # testing google chart data
 description = {"team_name": ("string", "Team"),
                "team_points": ("number", "Points"),
-               "period_name": ("string", "Period")}
+               "period_name": ("string", "Week")}
 
 data_table = gviz_api.DataTable(description)
 data_table.LoadData(score_chart_data)
 
 # Create a JavaScript code string.
 jscode = data_table.ToJSCode("jscode_data",
-                             columns_order=("team_name", "team_points"),
-                             order_by="period_name")
+                             columns_order=("period_name", "team_name", "team_points"),
+                             order_by="team_name")
 # Create a JSON string.
 myjson = data_table.ToJSon(columns_order=("team_name", "team_points"),
                              order_by="period_name")
