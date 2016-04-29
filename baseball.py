@@ -470,26 +470,54 @@ this_week, score_chart_data = process_schedule_data(schedule_data)
 timing_log.append(['step 2 (after process schedule data): ' + str(datetime.datetime.now() - start_time)])
 
 # testing google chart data
+'''
 description = {"team_name": ("string", "Team"),
                "team_points": ("number", "Points"),
                "period_name": ("string", "WeekName"),
                "period_id": ("number", "Week")}
+'''
+description = [("week1","number"),
+			("week2","number"),
+			("week3","number"),
+			("week4","number"),
+			("week5","number"),
+			("week6","number"),
+			("week7","number"),
+			("week8","number"),
+			("week9","number"),
+			("week10","number"),
+			("week11","number"),
+			("week12","number"),
+			("week13","number"),
+			("week14","number"),
+			("week15","number"),
+			("week16","number"),
+			("week17","number"),
+			("week18","number"),
+			("week19","number"),
+			("week20","number"),
+			("week21","number"),
+			("week22","number"),
+			("week23","number"),
+			("week24","number")]
 
-''' UNCOMMENT WHEN DONE DEBUGGING
 data_table = gviz_api.DataTable(description)
+# remove first row because it's a list of strings (team names)
+team_names = score_chart_data[0]
+del score_chart_data[0]
 data_table.LoadData(score_chart_data)
 
 # Create a JavaScript code string.
 jscode = data_table.ToJSCode("jscode_data",
-                             columns_order=("period_name", "team_name", "team_points", "period_id"),
-                             order_by="team_name")
+                             columns_order=("week1", "week2", "week3", "week4", "week5", "week6", "week7", "week8", "week9", "week10", "week11", "week12", "week13", "week14", "week15", "week16", "week17", "week18", "week19", "week20", "week21", "week22", "week23", "week24"),
+                             )
 # Create a JSON string.
-myjson = data_table.ToJSon(columns_order=("team_name", "team_points", "period_id"),
-                             order_by="period_id")
+myjson = data_table.ToJSon(columns_order=("week1", "week2", "week3", "week4", "week5", "week6", "week7", "week8", "week9", "week10", "week11", "week12", "week13", "week14", "week15", "week16", "week17", "week18", "week19", "week20", "week21", "week22", "week23", "week24"),
+                             )
 
 # now print headers
 print_headers(jscode, myjson)
-'''
+
 # get list of real (non-fantasy) games being played today
 gid_list = get_todays_gid_xml_blob()
 
@@ -511,7 +539,7 @@ print '-->'
 '''
 
 # quickly turn on or off all the output for debugging
-if 1==0:
+if 1==1:
 	#===========PUT CONTENT BELOW THIS POINT
 	print '<table class="table-fill"> <thead> <tr> <th class="text-right" width="300px">Away</th> <th class="text-left" width="300px">Home</th> </tr> </thead>'
 	
