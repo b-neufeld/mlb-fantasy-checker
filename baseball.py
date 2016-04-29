@@ -416,9 +416,49 @@ def print_lineup(lineup, h_o_a):
 				printed_players.append(lineup[player]['name'])
 	print '</details></td>'
 
+def print_headers(jscode, myjson):
+	# show some HTML while the rest of the script loads data - that's why this is up here. 
+	print "Content-type: text/html\n\n";
+	print "<html><head>";
+	
+	print """
+	<script src="https://www.google.com/jsapi" type="text/javascript"></script>
+	  <script>
+	    google.load('visualization', '1', {packages:['table']});
+	
+	    google.setOnLoadCallback(drawTable);
+	    function drawTable() {
+	      %(jscode)s
+	      var jscode_table = new google.visualization.Table(document.getElementById('table_div_jscode'));
+	      jscode_table.draw(jscode_data, {showRowNumber: true});
+	
+	      var json_table = new google.visualization.Table(document.getElementById('table_div_json'));
+	      var json_data = new google.visualization.DataTable(%(myjson)s, 0.6);
+	      json_table.draw(json_data, {showRowNumber: true});
+	    }
+	  </script>
+	""" % vars()
+	
+	print "<link rel='stylesheet' type='text/css' href='style.css'>";
+	print "<title>MLB.com Fantasy Is Garbage On Mobile</title>";
+	print '<meta charset="utf-8" />'
+	print '<meta name="viewport" content="initial-scale=1.0; maximum-scale=1.0; width=device-width;">';
+	print "</head><body>";
+	print '<div class="table-title"> <h3>A-R.I.M.P.J CURRENT SCORES <br> Team Points are WEEKLY<br>Player Points are TODAY</h3> </div>'
+
+
 ###################################################
 # START OF THE MEAT'N'POTATOES PART OF THE SCRIPT #
 ###################################################
+
+# get fantasy baseball league schedule data from MLB 
+schedule_data = get_schedule_data(league_id)
+timing_log.append(['step 1 (after schedule data grab): ' + str(datetime.datetime.now() - start_time)])
+
+# populate this_week with some initial data from the schedule
+# also, get data to print a fancy chart. 
+this_week, score_chart_data = process_schedule_data(schedule_data)
+timing_log.append(['step 2 (after process schedule data): ' + str(datetime.datetime.now() - start_time)])
 
 # testing google chart data
 description = {"team_name": ("string", "Team"),
@@ -433,46 +473,11 @@ jscode = data_table.ToJSCode("jscode_data",
                              columns_order=("team_name", "team_points"),
                              order_by="period_name")
 # Create a JSON string.
-json = data_table.ToJSon(columns_order=("team_name", "team_points"),
+myjson = data_table.ToJSon(columns_order=("team_name", "team_points"),
                              order_by="period_name")
 
-# show some HTML while the rest of the script loads data - that's why this is up here. 
-print "Content-type: text/html\n\n";
-print "<html><head>";
-
-print """
-<script src="https://www.google.com/jsapi" type="text/javascript"></script>
-  <script>
-    google.load('visualization', '1', {packages:['table']});
-
-    google.setOnLoadCallback(drawTable);
-    function drawTable() {
-      %(jscode)s
-      var jscode_table = new google.visualization.Table(document.getElementById('table_div_jscode'));
-      jscode_table.draw(jscode_data, {showRowNumber: true});
-
-      var json_table = new google.visualization.Table(document.getElementById('table_div_json'));
-      var json_data = new google.visualization.DataTable(%(json)s, 0.6);
-      json_table.draw(json_data, {showRowNumber: true});
-    }
-  </script>
-"""
-
-print "<link rel='stylesheet' type='text/css' href='style.css'>";
-print "<title>MLB.com Fantasy Is Garbage On Mobile</title>";
-print '<meta charset="utf-8" />'
-print '<meta name="viewport" content="initial-scale=1.0; maximum-scale=1.0; width=device-width;">';
-print "</head><body>";
-print '<div class="table-title"> <h3>A-R.I.M.P.J CURRENT SCORES <br> Team Points are WEEKLY<br>Player Points are TODAY</h3> </div>'
-
-# get fantasy baseball league schedule data from MLB 
-schedule_data = get_schedule_data(league_id)
-timing_log.append(['step 1 (after schedule data grab): ' + str(datetime.datetime.now() - start_time)])
-
-# populate this_week with some initial data from the schedule
-# also, get data to print a fancy chart. 
-this_week, score_chart_data = process_schedule_data(schedule_data)
-timing_log.append(['step 2 (after process schedule data): ' + str(datetime.datetime.now() - start_time)])
+# now print headers
+print_headers(jscode, myjson)
 
 # get list of real (non-fantasy) games being played today
 gid_list = get_todays_gid_xml_blob()
