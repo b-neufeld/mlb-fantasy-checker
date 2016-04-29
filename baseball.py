@@ -250,6 +250,9 @@ def process_schedule_data(schedule_data):
 	# get list of team names
 	team_name_list = []
 	
+	# max completed week - for making sure thechart data array doesn't include zeros
+	max_week = 0
+	
 	# loop through each and every season's matchup returned from the json data
 	for matchup in schedule_data:
 		
@@ -260,6 +263,10 @@ def process_schedule_data(schedule_data):
 		# build list of team names
 		if matchup["team_name"] not in team_name_list:
 			team_name_list.append(matchup["team_name"])
+		
+		# get max completed week 
+		if int(matchup['period_id'])-10 > max_week and matchup['is_final'] == 'y':
+			max_week = int(matchup['period_id'])-10
 		
 		# look for matchups flagged as current - this is what we want to work with for this_week
 		# for completed games, look for "is_final"==y"
@@ -291,7 +298,7 @@ def process_schedule_data(schedule_data):
 		
 	# start putting together a data set for completed weeks
 	# this variable has an empty list for every week (0-23)
-	score_chart_data = [[0 for i in range(12)] for i in range(24)]
+	score_chart_data = [[0 for i in range(12)] for i in range(max_week)]
 	
 	#sort the list of team names alphabetically
 	team_name_list.sort()
@@ -474,36 +481,24 @@ timing_log.append(['step 1 (after schedule data grab): ' + str(datetime.datetime
 this_week, score_chart_data = process_schedule_data(schedule_data)
 timing_log.append(['step 2 (after process schedule data): ' + str(datetime.datetime.now() - start_time)])
 
-# testing google chart data
-'''
-description = {"team_name": ("string", "Team"),
-               "team_points": ("number", "Points"),
-               "period_name": ("string", "WeekName"),
-               "period_id": ("number", "Week")}
-
-description = [("week1","number"),
-			("week2","number"),
-			("week3","number"),
-			("week4","number"),
-			("week5","number"),
-			("week6","number"),
-			("week7","number"),
-			("week8","number"),
-			("week9","number"),
-			("week10","number"),
-			("week11","number"),
-			("week12","number")]
-			'''
-			
+# grab team names out of this array			
 team_names = score_chart_data[0]
+# build data table legend info. 
 description = [(team_names[x],"number",team_names[x]) for x in range(len(team_names))]
-#print description
 
-data_table = gviz_api.DataTable(description)
 # remove first row because it's a list of strings (team names)
-
 del score_chart_data[0]
-data_table.LoadData(score_chart_data)
+
+all_zeros = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+completed_weeks = []
+
+for week in score_chart_data:
+	if week is not all_zeros:
+		completed_weeks.append(week)
+
+# set up Google Charts gviz_api chart info. 
+data_table = gviz_api.DataTable(description)
+data_table.LoadData(completed_weeks)
 
 # Create a JavaScript code string.
 jscode = data_table.ToJSCode("jscode_data", columns_order=(team_names ), )
@@ -579,10 +574,8 @@ if 1==1:
 	
 	# Put the JS code and JSON string into the template.
 	print """
-	<H1>Table created using ToJSCode</H1>
+	
 	    <div id="table_div_jscode"></div>
-	    <H1>Table created using ToJSon</H1>
-	    <div id="table_div_json"></div>
 	 """
 	
 	#===========PUT CONTENT ABOVE THIS POINT
