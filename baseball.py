@@ -451,6 +451,7 @@ def print_headers(jscode):
 	      
 	      var options = {
 	          title: 'Fantasy Baseball',
+	          curveType: 'function',
 	          legend: { position: 'bottom' },
 	          hAxis: { viewWindowMode: 'maximized',
 	          			allowContainerBoundaryTextCufoff: 'true' },
