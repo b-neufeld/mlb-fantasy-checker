@@ -432,7 +432,7 @@ def print_lineup(lineup, h_o_a):
 				printed_players.append(lineup[player]['name'])
 	print '</details></td>'
 
-def print_headers(jscode, myjson):
+def print_headers(jscode):
 	# show some HTML while the rest of the script loads data - that's why this is up here. 
 	print "Content-type: text/html\n\n";
 	print "<html><head>";
@@ -452,6 +452,7 @@ def print_headers(jscode, myjson):
 	      var options = {
 	          title: 'Fantasy Baseball',
 	          legend: { position: 'bottom' }
+	         
        		 };
         
 	      chart.draw(jscode_data, options);
@@ -483,8 +484,15 @@ timing_log.append(['step 2 (after process schedule data): ' + str(datetime.datet
 
 # grab team names out of this array			
 team_names = score_chart_data[0]
+
+# debug
+#print team_names
+
 # build data table legend info. 
 description = [(team_names[x],"number",team_names[x]) for x in range(len(team_names))]
+description.insert(0, ("Week","string","Week"))
+#debug
+#print description
 
 # remove first row because it's a list of strings (team names)
 del score_chart_data[0]
@@ -494,19 +502,22 @@ completed_weeks = []
 
 for week in score_chart_data:
 	if week is not all_zeros:
+		week.insert(0,score_chart_data.index(week)+1)
 		completed_weeks.append(week)
+		
+#debug
+#print completed_weeks		
 
 # set up Google Charts gviz_api chart info. 
 data_table = gviz_api.DataTable(description)
 data_table.LoadData(completed_weeks)
 
 # Create a JavaScript code string.
+team_names.insert(0,'Week')
 jscode = data_table.ToJSCode("jscode_data", columns_order=(team_names ), )
-# Create a JSON string.
-myjson = data_table.ToJSon(columns_order=(team_names), )
 
 # now print headers
-print_headers(jscode, myjson)
+print_headers(jscode)
 
 # get list of real (non-fantasy) games being played today
 gid_list = get_todays_gid_xml_blob()
@@ -575,7 +586,7 @@ if 1==1:
 	# Put the JS code and JSON string into the template.
 	print """
 	
-	    <div id="table_div_jscode"></div>
+	    <div id="table_div_jscode" style="width: 100%; height: 600px"></div>
 	 """
 	
 	#===========PUT CONTENT ABOVE THIS POINT
