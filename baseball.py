@@ -247,8 +247,8 @@ def get_schedule_data(league_id):
 # 		away_name
 def process_schedule_data(schedule_data):
 	
-	# define dictionary for score chart 
-	score_chart_data = {}
+	# get list of team names
+	team_name_list = []
 	
 	# loop through each and every season's matchup returned from the json data
 	for matchup in schedule_data:
@@ -256,6 +256,10 @@ def process_schedule_data(schedule_data):
 		# if any geniuses use illegal characters in their names, filter them out and replace with Butt
 		# reference: http://stackoverflow.com/questions/20078816/replace-non-ascii-characters-with-a-single-space?lq=1
 		matchup["team_name"] = ''.join([i if ord(i) < 128 else 'Butt' for i in matchup["team_name"] ])
+		
+		# build list of team names
+		if matchup["team_name"] not in team_name_list:
+			team_name_list.append(matchup["team_name"])
 		
 		# look for matchups flagged as current - this is what we want to work with for this_week
 		# for completed games, look for "is_final"==y"
@@ -286,10 +290,12 @@ def process_schedule_data(schedule_data):
 			this_week[matchup["matchup_set"]]['period_id'] = matchup["period_id"]
 		
 	# start putting together a data set for completed weeks
-	# This can be used to generate graphs and stats for weekly scores. 
-	# key: period_id minus 10 (first period is 11, so this makes it "week 1")
-	# will need to return a second value from process_schedule_data
-	score_chart_data = []
+	# this variable has an empty list for every week (0-23)
+	score_chart_data = [[0 for i in range(12)] for i in range(24)]
+	
+	#sort the list of team names alphabetically
+	team_name_list.sort()
+	#print team_name_list
 	
 	for matchup in schedule_data:
 		# remove fields I don't need for the chart
@@ -299,11 +305,12 @@ def process_schedule_data(schedule_data):
 		# team_points
 		# period_id - subtract 10 because week 1 is period_id=11
 		if matchup['is_final'] == 'y':
-			data = dict([ ('team_name', matchup['team_name']),
-						('period_name', matchup['period_name']),
-						 ('team_points', int(matchup['team_points'])),
-					 ('period_id', int(matchup['period_id'])-10)])
-			score_chart_data.append(data)
+			period_id = int(matchup['period_id'])
+			# insert team's score (when alphabeticaly sorted) into right column in score table
+			score_chart_data[period_id-11][team_name_list.index(matchup['team_name'])] = int(matchup['team_points'])	
+		
+	# insert list of team names into score chart data array 
+	score_chart_data.insert(0,team_name_list)
 	
 	# debug 
 	#print score_chart_data
@@ -468,6 +475,7 @@ description = {"team_name": ("string", "Team"),
                "period_name": ("string", "WeekName"),
                "period_id": ("number", "Week")}
 
+''' UNCOMMENT WHEN DONE DEBUGGING
 data_table = gviz_api.DataTable(description)
 data_table.LoadData(score_chart_data)
 
@@ -481,7 +489,7 @@ myjson = data_table.ToJSon(columns_order=("team_name", "team_points", "period_id
 
 # now print headers
 print_headers(jscode, myjson)
-
+'''
 # get list of real (non-fantasy) games being played today
 gid_list = get_todays_gid_xml_blob()
 
@@ -502,55 +510,57 @@ pp.pprint(super_boxscore)
 print '-->'
 '''
 
-#===========PUT CONTENT BELOW THIS POINT
-print '<table class="table-fill"> <thead> <tr> <th class="text-right" width="300px">Away</th> <th class="text-left" width="300px">Home</th> </tr> </thead>'
-
-for matchup in this_week:
-	# row header
-	print '<tbody class="table-hover"> <tr>'
+# quickly turn on or off all the output for debugging
+if 1==0:
+	#===========PUT CONTENT BELOW THIS POINT
+	print '<table class="table-fill"> <thead> <tr> <th class="text-right" width="300px">Away</th> <th class="text-left" width="300px">Home</th> </tr> </thead>'
 	
-	# away team data
-	print '<td class="text-right" width="300px">'
-	print '<summary><a href="http://www.mlb.com/mlb/fantasy/fb/team/index.jsp?team_id=' + str(this_week[matchup]['away_team']) + '">'
-	print this_week[matchup]['away_name']
-	print '</a>'
-	print ' - <b>' + str(this_week[matchup]['away_points']) + '</b></summary>'
-	print_lineup(this_week[matchup]['away_lineup'], 'away')
+	for matchup in this_week:
+		# row header
+		print '<tbody class="table-hover"> <tr>'
+		
+		# away team data
+		print '<td class="text-right" width="300px">'
+		print '<summary><a href="http://www.mlb.com/mlb/fantasy/fb/team/index.jsp?team_id=' + str(this_week[matchup]['away_team']) + '">'
+		print this_week[matchup]['away_name']
+		print '</a>'
+		print ' - <b>' + str(this_week[matchup]['away_points']) + '</b></summary>'
+		print_lineup(this_week[matchup]['away_lineup'], 'away')
+		
+		# home team data
+		print '<td class="text-left" width="300px">'
+		print '<summary><b>' + str(this_week[matchup]['home_points']) + ' - </b>'
+		print '<a href="http://www.mlb.com/mlb/fantasy/fb/team/index.jsp?team_id=' + str(this_week[matchup]['home_team']) + '">'
+		print this_week[matchup]['home_name']
+		print '</a></summary>'
+		print_lineup(this_week[matchup]['home_lineup'], 'home')	
+		print '</td>'
+		
+		# row closer
+		print '</tr>'
 	
-	# home team data
-	print '<td class="text-left" width="300px">'
-	print '<summary><b>' + str(this_week[matchup]['home_points']) + ' - </b>'
-	print '<a href="http://www.mlb.com/mlb/fantasy/fb/team/index.jsp?team_id=' + str(this_week[matchup]['home_team']) + '">'
-	print this_week[matchup]['home_name']
-	print '</a></summary>'
-	print_lineup(this_week[matchup]['home_lineup'], 'home')	
-	print '</td>'
+	print '</tbody> </table>';
 	
-	# row closer
-	print '</tr>'
-
-print '</tbody> </table>';
-
-print '<div> <h4>REFRESH PAGE TO RELOAD SCORES</h4> </div>'
-
-print '<div> <h4><a class="footer" href="https://github.com/b-neufeld/mlb-fantasy-checker">about & source</a></h4> </div>'
-
-timing_log.append(['step 4 (end of script): ' + str(datetime.datetime.now() - start_time)])
-
-print '<!--'
-pp = pprint.PrettyPrinter(indent=1)
-pp.pprint(timing_log)
-print '-->'
-
-print '<div> <h4> Loaded in ' + str(datetime.datetime.now() - start_time) + '</h4></div>'
-
-# Put the JS code and JSON string into the template.
-print """
-<H1>Table created using ToJSCode</H1>
-    <div id="table_div_jscode"></div>
-    <H1>Table created using ToJSon</H1>
-    <div id="table_div_json"></div>
- """
-
-#===========PUT CONTENT ABOVE THIS POINT
-print "</body></html>";
+	print '<div> <h4>REFRESH PAGE TO RELOAD SCORES</h4> </div>'
+	
+	print '<div> <h4><a class="footer" href="https://github.com/b-neufeld/mlb-fantasy-checker">about & source</a></h4> </div>'
+	
+	timing_log.append(['step 4 (end of script): ' + str(datetime.datetime.now() - start_time)])
+	
+	print '<!--'
+	pp = pprint.PrettyPrinter(indent=1)
+	pp.pprint(timing_log)
+	print '-->'
+	
+	print '<div> <h4> Loaded in ' + str(datetime.datetime.now() - start_time) + '</h4></div>'
+	
+	# Put the JS code and JSON string into the template.
+	print """
+	<H1>Table created using ToJSCode</H1>
+	    <div id="table_div_jscode"></div>
+	    <H1>Table created using ToJSon</H1>
+	    <div id="table_div_json"></div>
+	 """
+	
+	#===========PUT CONTENT ABOVE THIS POINT
+	print "</body></html>";
