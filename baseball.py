@@ -475,7 +475,7 @@ description = {"team_name": ("string", "Team"),
                "team_points": ("number", "Points"),
                "period_name": ("string", "WeekName"),
                "period_id": ("number", "Week")}
-'''
+
 description = [("week1","number"),
 			("week2","number"),
 			("week3","number"),
@@ -488,20 +488,22 @@ description = [("week1","number"),
 			("week10","number"),
 			("week11","number"),
 			("week12","number")]
+			'''
+			
+team_names = score_chart_data[0]
+description = [(team_names[x],"number",team_names[x]) for x in range(len(team_names))]
+#print description
 
 data_table = gviz_api.DataTable(description)
 # remove first row because it's a list of strings (team names)
-team_names = score_chart_data[0]
+
 del score_chart_data[0]
 data_table.LoadData(score_chart_data)
 
 # Create a JavaScript code string.
-jscode = data_table.ToJSCode("jscode_data",
-                             columns_order=("week1", "week2", "week3", "week4", "week5", "week6", "week7", "week8", "week9", "week10", "week11", "week12" ),
-                             )
+jscode = data_table.ToJSCode("jscode_data", columns_order=(team_names ), )
 # Create a JSON string.
-myjson = data_table.ToJSon(columns_order=("week1", "week2", "week3", "week4", "week5", "week6", "week7", "week8", "week9", "week10", "week11", "week12"),
-                             )
+myjson = data_table.ToJSon(columns_order=(team_names), )
 
 # now print headers
 print_headers(jscode, myjson)
