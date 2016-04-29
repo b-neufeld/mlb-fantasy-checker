@@ -300,13 +300,13 @@ def process_schedule_data(schedule_data):
 		if matchup['is_final'] == 'y':
 			data = dict([ ('team_name', matchup['team_name']),
 						('period_name', matchup['period_name']),
-						 ('team_points', matchup['team_points'])] )
+						 ('team_points', int(matchup['team_points']))] )
 			score_chart_data.append(data)
 	
 	# debug 
-	print score_chart_data
+	#print score_chart_data
 	
-	return this_week
+	return this_week, score_chart_data
 	
 # grab a roster json object from mlb and return it 
 # needs a fantasy baseball team id and the period id. 
@@ -420,9 +420,44 @@ def print_lineup(lineup, h_o_a):
 # START OF THE MEAT'N'POTATOES PART OF THE SCRIPT #
 ###################################################
 
+# testing google chart data
+description = {"team_name": ("string", "Team"),
+               "team_points": ("number", "Points"),
+               "period_name": ("string", "Period")}
+
+data_table = gviz_api.DataTable(description)
+data_table.LoadData(score_chart_data)
+
+# Create a JavaScript code string.
+jscode = data_table.ToJSCode("jscode_data",
+                             columns_order=("team_name", "team_points"),
+                             order_by="period_name")
+# Create a JSON string.
+json = data_table.ToJSon(columns_order=("team_name", "team_points"),
+                             order_by="period_name")
+
 # show some HTML while the rest of the script loads data - that's why this is up here. 
 print "Content-type: text/html\n\n";
 print "<html><head>";
+
+print """
+<script src="https://www.google.com/jsapi" type="text/javascript"></script>
+  <script>
+    google.load('visualization', '1', {packages:['table']});
+
+    google.setOnLoadCallback(drawTable);
+    function drawTable() {
+      %(jscode)s
+      var jscode_table = new google.visualization.Table(document.getElementById('table_div_jscode'));
+      jscode_table.draw(jscode_data, {showRowNumber: true});
+
+      var json_table = new google.visualization.Table(document.getElementById('table_div_json'));
+      var json_data = new google.visualization.DataTable(%(json)s, 0.6);
+      json_table.draw(json_data, {showRowNumber: true});
+    }
+  </script>
+"""
+
 print "<link rel='stylesheet' type='text/css' href='style.css'>";
 print "<title>MLB.com Fantasy Is Garbage On Mobile</title>";
 print '<meta charset="utf-8" />'
@@ -434,8 +469,9 @@ print '<div class="table-title"> <h3>A-R.I.M.P.J CURRENT SCORES <br> Team Points
 schedule_data = get_schedule_data(league_id)
 timing_log.append(['step 1 (after schedule data grab): ' + str(datetime.datetime.now() - start_time)])
 
-# populate this_week with some initial data from 
-this_week = process_schedule_data(schedule_data)
+# populate this_week with some initial data from the schedule
+# also, get data to print a fancy chart. 
+this_week, score_chart_data = process_schedule_data(schedule_data)
 timing_log.append(['step 2 (after process schedule data): ' + str(datetime.datetime.now() - start_time)])
 
 # get list of real (non-fantasy) games being played today
@@ -500,7 +536,15 @@ print '-->'
 
 print '<div> <h4> Loaded in ' + str(datetime.datetime.now() - start_time) + '</h4></div>'
 
-
+# Put the JS code and JSON string into the template.
+print "Content-type: text/html"
+print
+print """
+<H1>Table created using ToJSCode</H1>
+    <div id="table_div_jscode"></div>
+    <H1>Table created using ToJSon</H1>
+    <div id="table_div_json"></div>
+ """
 
 #===========PUT CONTENT ABOVE THIS POINT
 print "</body></html>";
