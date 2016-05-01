@@ -302,7 +302,6 @@ def process_schedule_data(schedule_data):
 	
 	#sort the list of team names alphabetically
 	team_name_list.sort()
-	#print team_name_list
 	
 	for matchup in schedule_data:
 		# remove fields I don't need for the chart
@@ -318,10 +317,7 @@ def process_schedule_data(schedule_data):
 		
 	# insert list of team names into score chart data array 
 	score_chart_data.insert(0,team_name_list)
-	
-	# debug 
-	#print score_chart_data
-	
+
 	return this_week, score_chart_data
 	
 # grab a roster json object from mlb and return it 
@@ -487,20 +483,15 @@ timing_log.append(['step 1 (after schedule data grab): ' + str(datetime.datetime
 this_week, score_chart_data = process_schedule_data(schedule_data)
 timing_log.append(['step 2 (after process schedule data): ' + str(datetime.datetime.now() - start_time)])
 
+################# START OF STUFF FOR GOOGLE CHARTS #############################
 # grab team names out of this array			
 team_names = score_chart_data[0]
-
-# debug
-#print team_names
+# remove first row because it's a list of strings (team names)
+del score_chart_data[0]
 
 # build data table legend info. 
 description = [(team_names[x],"number",team_names[x]) for x in range(len(team_names))]
 description.insert(0, ("Week","string","Week"))
-#debug
-#print description
-
-# remove first row because it's a list of strings (team names)
-del score_chart_data[0]
 
 all_zeros = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 completed_weeks = []
@@ -510,28 +501,21 @@ for week in score_chart_data:
 		week.insert(0,"Week " + str(score_chart_data.index(week)+1))
 		completed_weeks.append(week)
 
-#print completed_weeks
-#print completed_weeks[0][1]
-
-# calculate running totals
+# calculate running points totals - doesn't include week in progress. 
 for week in completed_weeks:
-	#print completed_weeks.index(week)
 	if completed_weeks.index(week) > 0:
 		for team_score in week:
 			if week.index(team_score) > 0:
-				#print team_score + completed_weeks[completed_weeks.index(week)-1][week.index(team_score)]
+				# add this week's points to last week's points if week > 0
 				completed_weeks[completed_weeks.index(week)][week.index(team_score)] = team_score + completed_weeks[completed_weeks.index(week)-1][week.index(team_score)]
-				# try calculating points lead
-				#completed_weeks[completed_weeks.index(week)][week.index(team_score)] = max(week) - team_score + completed_weeks[completed_weeks.index(week)-1][week.index(team_score)]
-	
-#debug
-#print completed_weeks	
-points_back = completed_weeks	
 
+# now calculate points back. Doesn't include the week in progress. 
+points_back = completed_weeks	
 for week in points_back: 
 	max_week = max(week[1:])
-	min_week = min(week[1:])
 	
+	# since every week is a running total, subtracting this week's team_points
+	# from max_week gives us points_back for every team. 
 	for team_points in week[1:]:
 		points_back[points_back.index(week)][week.index(team_points)] = max_week - team_points
 
@@ -541,10 +525,13 @@ data_table.LoadData(points_back)
 
 # Create a JavaScript code string.
 team_names.insert(0,'Week')
+# create the Java code to hide in the HTML headers to call the chart. 
 jscode = data_table.ToJSCode("jscode_data", columns_order=(team_names ), )
 
-# now print headers
+# now print HTML headers; these are formatted with Google Charts API stuff. 
 print_headers(jscode)
+
+################### END OF STUFF FOR GOOGLE CHARTS #############################
 
 # get list of real (non-fantasy) games being played today
 gid_list = get_todays_gid_xml_blob()
@@ -610,7 +597,7 @@ if 1==1:
 	
 	print '<div> <h4> Loaded in ' + str(datetime.datetime.now() - start_time) + '</h4></div>'
 	
-	# Put the JS code and JSON string into the template.
+	# This div is where the Google Chart is served to. 
 	print """
 	
 	    <div id="table_div_jscode" style="width: 100%; height: 600px" ></div>

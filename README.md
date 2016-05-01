@@ -13,6 +13,9 @@ Because:
 	  
 ================= CHANGE LOG =================
 
+2016-05-01
+- Code cleanup
+
 2016-04-28
 - Starting to work on Google Charts API
 
