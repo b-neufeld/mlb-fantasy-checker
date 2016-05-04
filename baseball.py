@@ -454,14 +454,7 @@ def print_headers(jscode):
 	          			minValue: '1', 
 	          			viewWindow: {min:'1'}},
 	          vAxis: { viewWindowMode: 'maximized'},
-	          series: {
-				  0: {
-				    annotations: {
-				      style: 'line',
-				      textStyle: {fontSize: 12, color: 'red' }
-				    }
-				  }
-				}
+	          
        		 };
         
 	      chart.draw(jscode_data, options);
