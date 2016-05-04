@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import json, urllib, urllib2, pprint, re, datetime, time, threading, gviz_api, random
+import json, urllib, urllib2, pprint, re, datetime, time, threading, gviz_api, itertools
 from threading import Thread
 
 ########################
@@ -590,11 +590,12 @@ data_table.LoadData(points_back)
 print description
 
 # Create a JavaScript code string.
-team_names = intersperse(team_names, '')
+team_names = list(itertools.chain.from_iterable(zip(team_names,[s + '-anno' for s in team_names])))
 team_names.insert(0,'Week')
+#print team_names
 # this is what I need to buid.... I think. 
 # YES, YES, YES  --> TODO TODO TODO WORK ON BUILDING THIS PROPER TEAM NAMES STRING. 
-team_names = ['Week', u'2 n da Posey,1 n da Pujol', '2 n da Posey,1 n da Pujol-anno', u"Can't Cutch This", 'anno2', u'Cruz Missiles', 'anno3', u'Lick My Pujols', 'anno4', u'Majestic Beavers', 'anno5', u"Melvin doesn't like a BJ", 'anno6', u'Puig Destroyer', 'anno7', u'SMELL THE GLOVE', 'anno8', u'The Bonairs 2000', 'anno9', u'TrouserTrout', 'anno10', u'Tulogit to Quit', 'anno11', u'Votto649', 'anno12']
+#team_names = ['Week', u'2 n da Posey,1 n da Pujol', '2 n da Posey,1 n da Pujol-anno', u"Can't Cutch This", 'anno2', u'Cruz Missiles', 'anno3', u'Lick My Pujols', 'anno4', u'Majestic Beavers', 'anno5', u"Melvin doesn't like a BJ", 'anno6', u'Puig Destroyer', 'anno7', u'SMELL THE GLOVE', 'anno8', u'The Bonairs 2000', 'anno9', u'TrouserTrout', 'anno10', u'Tulogit to Quit', 'anno11', u'Votto649', 'anno12']
 
 print points_back
 # create the Java code to hide in the HTML headers to call the chart. 
