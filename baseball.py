@@ -448,8 +448,8 @@ def print_headers(jscode):
 	      var options = {
 	          title: 'Fantasy Baseball Points Back (Lower = Better)',
 	          curveType: 'function',
-
 	          legend: { position: 'none' },
+	          chartArea: {left:40,top:40,width:'95%%',height:'90%%'},
 	          hAxis: { viewWindowMode: 'maximized',
 	          			minValue: '1', 
 	          			viewWindow: {min:'1'}},
