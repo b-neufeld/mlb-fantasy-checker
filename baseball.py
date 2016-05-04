@@ -568,16 +568,22 @@ for week in completed_weeks:
 # now calculate points back. Doesn't include the week in progress. 
 points_back = completed_weeks	
 for week in points_back: 
-	max_week = max(filter(bool,week[1:]))
+	
+	#max_week = max(filter(bool,week[1:]))
+	max_week = max(filter(bool,week))
+	
+	print week, max_week
 	
 	# since every week is a running total, subtracting this week's team_points
 	# from max_week gives us points_back for every team. 
-	for team_points in week[1:]:
+	for team_points in week:
 		if team_points <> '':
-			points_back[points_back.index(week)][week.index(team_points)] = max_week - int(team_points)
+		#if not team_points:
+			
+			points_back[points_back.index(week)][week.index(team_points)] = max_week - team_points
 	week.insert(0,"Week " + str(points_back.index(week)+1))
 
-#print team_names
+print points_back
 
 
 # insert a row for the Week
@@ -603,7 +609,7 @@ team_names.insert(0,'Week')
 jscode = data_table.ToJSCode("jscode_data", columns_order=(team_names ), )
 
 # now print HTML headers; these are formatted with Google Charts API stuff. 
-print_headers(jscode)
+#print_headers(jscode)
 
 ################### END OF STUFF FOR GOOGLE CHARTS #############################
 
@@ -628,7 +634,7 @@ print '-->'
 '''
 
 # quickly turn on or off all the output for debugging
-if 1==1:
+if 1==0:
 	#===========PUT CONTENT BELOW THIS POINT
 	print '<table class="table-fill"> <thead> <tr> <th class="text-right" width="300px">Away</th> <th class="text-left" width="300px">Home</th> </tr> </thead>'
 	
