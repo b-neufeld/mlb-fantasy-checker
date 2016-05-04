@@ -449,7 +449,7 @@ def print_headers(jscode):
 	          title: 'Fantasy Baseball Points Back (Lower = Better)',
 	          curveType: 'function',
 
-	          legend: { position: 'right' },
+	          legend: { position: 'none' },
 	          hAxis: { viewWindowMode: 'maximized',
 	          			minValue: '1', 
 	          			viewWindow: {min:'1'}},
@@ -539,7 +539,7 @@ formatted_weeks = []
 
 # calculate running points totals - doesn't include week in progress. 
 for week in completed_weeks:
-	#print len(completed_weeks)
+	num_weeks = len(completed_weeks)-1
 	
 	index = completed_weeks.index(week)
 	#print index
@@ -558,7 +558,8 @@ for week in completed_weeks:
 				#if week.index(team_score) > 0:
 				# add this week's points to last week's points if week > 0
 				completed_weeks[index][week.index(team_score)] = team_score + completed_weeks[index-1][week.index(team_score)]
-
+			#if team_score == '' and index == num_weeks:
+			#	print week
 
 # moved from preceeding for loop
 #week.insert(0,"Week " + str(completed_weeks.index(week)+1))
@@ -572,18 +573,21 @@ for week in points_back:
 	#max_week = max(filter(bool,week[1:]))
 	max_week = max(filter(bool,week))
 	
-	print week, max_week
+	#print week, max_week
 	
 	# since every week is a running total, subtracting this week's team_points
 	# from max_week gives us points_back for every team. 
 	for team_points in week:
 		if team_points <> '':
 		#if not team_points:
-			
 			points_back[points_back.index(week)][week.index(team_points)] = max_week - team_points
+		if team_points == '' and points_back.index(week) == len(points_back)-1:
+			#print week.index(team_points)
+			points_back[points_back.index(week)][week.index(team_points)] = team_names[(week.index(team_points)-1)/2]
 	week.insert(0,"Week " + str(points_back.index(week)+1))
 
-print points_back
+#print points_back
+#print team_names
 
 
 # insert a row for the Week
@@ -609,7 +613,7 @@ team_names.insert(0,'Week')
 jscode = data_table.ToJSCode("jscode_data", columns_order=(team_names ), )
 
 # now print HTML headers; these are formatted with Google Charts API stuff. 
-#print_headers(jscode)
+print_headers(jscode)
 
 ################### END OF STUFF FOR GOOGLE CHARTS #############################
 
@@ -634,7 +638,7 @@ print '-->'
 '''
 
 # quickly turn on or off all the output for debugging
-if 1==0:
+if 1==1:
 	#===========PUT CONTENT BELOW THIS POINT
 	print '<table class="table-fill"> <thead> <tr> <th class="text-right" width="300px">Away</th> <th class="text-left" width="300px">Home</th> </tr> </thead>'
 	
