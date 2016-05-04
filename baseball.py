@@ -516,10 +516,11 @@ for item in description:
 	# detect empty strings http://stackoverflow.com/questions/9573244/most-elegant-way-to-check-if-the-string-is-empty-in-python
 	if not item:
 		#print 'hello', description.index(item), description[description.index(item)-1]
-		description[description.index(item)] = description[description.index(item)-1][0] + str('-anno')
+		description[description.index(item)] = (description[description.index(item)-1][0] + str('-anno'),"string","",dict({'type':'string', 'role':'annotation'}))
+		#description[description.index(item)] = "{type:'string', role:'annotation'}"
+		#description.insert(0, ("annotation","string","annotation"))
 
-#description.insert(0, ("annotation","string","annotation"))
-print description
+#print description
 
 all_zeros = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 completed_weeks = []
@@ -576,7 +577,7 @@ for week in points_back:
 			points_back[points_back.index(week)][week.index(team_points)] = max_week - int(team_points)
 	week.insert(0,"Week " + str(points_back.index(week)+1))
 
-print team_names
+#print team_names
 
 
 # insert a row for the Week
@@ -587,7 +588,7 @@ data_table = gviz_api.DataTable(description)
 data_table.LoadData(points_back)
 #print data_table.ToJSCode("jscode_data", columns_order=(team_names ), )
 
-print description
+#print description
 
 # Create a JavaScript code string.
 team_names = list(itertools.chain.from_iterable(zip(team_names,[s + '-anno' for s in team_names])))
@@ -597,7 +598,7 @@ team_names.insert(0,'Week')
 # YES, YES, YES  --> TODO TODO TODO WORK ON BUILDING THIS PROPER TEAM NAMES STRING. 
 #team_names = ['Week', u'2 n da Posey,1 n da Pujol', '2 n da Posey,1 n da Pujol-anno', u"Can't Cutch This", 'anno2', u'Cruz Missiles', 'anno3', u'Lick My Pujols', 'anno4', u'Majestic Beavers', 'anno5', u"Melvin doesn't like a BJ", 'anno6', u'Puig Destroyer', 'anno7', u'SMELL THE GLOVE', 'anno8', u'The Bonairs 2000', 'anno9', u'TrouserTrout', 'anno10', u'Tulogit to Quit', 'anno11', u'Votto649', 'anno12']
 
-print points_back
+#print points_back
 # create the Java code to hide in the HTML headers to call the chart. 
 jscode = data_table.ToJSCode("jscode_data", columns_order=(team_names ), )
 
@@ -627,7 +628,7 @@ print '-->'
 '''
 
 # quickly turn on or off all the output for debugging
-if 1==0:
+if 1==1:
 	#===========PUT CONTENT BELOW THIS POINT
 	print '<table class="table-fill"> <thead> <tr> <th class="text-right" width="300px">Away</th> <th class="text-left" width="300px">Home</th> </tr> </thead>'
 	
