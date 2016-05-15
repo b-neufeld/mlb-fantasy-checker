@@ -8,6 +8,9 @@ from threading import Thread
 ########################
 league_id = '1514'
 ########################
+# variable to show google chart
+show_chart = True
+########################
 # define other global variables
 this_week = {}
 matchup_id_array = []
