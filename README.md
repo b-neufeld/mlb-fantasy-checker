@@ -10,8 +10,18 @@ Because:
 - This is, and will remain, a non-commercial project
 - It is accessed by and designed for (12) individuals who have to host the script somewhere. 
 - It does not scrape data in bulk, and the data it does collect is only served (not stored).
+
+================= HOW TO USE =================
+
+- Upload files to webserver running Python 2.7
+- Change the league_id in baseball.py to YOUR league_id
+- Open baseball.py in Google Chrome. Share with your league! 
 	  
 ================= CHANGE LOG =================
+
+2016-05-14
+- Google Charts API is working - shows points_back graph
+- Code cleanup
 
 2016-05-01
 - Code cleanup
