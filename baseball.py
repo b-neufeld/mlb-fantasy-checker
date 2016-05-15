@@ -489,8 +489,7 @@ def print_google_chart(score_chart_data):
 
 	# build data table legend info. 
 	description = [(team_names[x],"number",team_names[x]) for x in range(len(team_names))]
-	#value = ('','string',None, { 'type':'string', 'role':'annotation'})
-	#print description
+
 	description =  intersperse(description, '')
 	#print description
 	# promising troubleshooting http://stackoverflow.com/questions/27944921/how-to-use-custom-properties-with-python-google-charts-aviz-api-py
