@@ -479,6 +479,7 @@ def intersperse(seq, value):
     res[::2] = seq
     return res
 
+#apologies to anyone trying to figure out how this works. 
 def print_google_chart(score_chart_data):
 
 	# grab team names out of this array			
@@ -499,11 +500,11 @@ def print_google_chart(score_chart_data):
 			# build annotation columns for Google Charts
 			description[description.index(item)] = (description[description.index(item)-1][0] + str('-anno'),"string","",dict({'type':'string', 'role':'annotation'}))
 
-	all_zeros = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+	# new list to be populated with rows from score_chart_data
 	completed_weeks = []
 	
 	for week in score_chart_data:
-		if week is not all_zeros:
+		if week is not [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]:
 			completed_weeks.append(week)
 	
 	# calculate running points totals - doesn't include week in progress. 
@@ -511,7 +512,7 @@ def print_google_chart(score_chart_data):
 		num_weeks = len(completed_weeks)-1
 		
 		index = completed_weeks.index(week)
-		
+		# insert blanks for Google Chart annotations
 		week = intersperse(week, '')
 		
 		completed_weeks[index] = week
