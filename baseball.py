@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import json, urllib, urllib2, pprint, re, datetime, time, threading
+import json, urllib, urllib2, pprint, re, datetime, time, threading, gviz_api, itertools
 from threading import Thread
 
 ########################
@@ -7,6 +7,9 @@ from threading import Thread
 # change for YOUR league
 ########################
 league_id = '1514'
+########################
+# variable to show google chart
+show_chart = True
 ########################
 # define other global variables
 this_week = {}
@@ -247,12 +250,26 @@ def get_schedule_data(league_id):
 # 		away_name
 def process_schedule_data(schedule_data):
 	
+	# get list of team names
+	team_name_list = []
+	
+	# max completed week - for making sure thechart data array doesn't include zeros
+	max_week = 0
+	
 	# loop through each and every season's matchup returned from the json data
 	for matchup in schedule_data:
 		
 		# if any geniuses use illegal characters in their names, filter them out and replace with Butt
 		# reference: http://stackoverflow.com/questions/20078816/replace-non-ascii-characters-with-a-single-space?lq=1
 		matchup["team_name"] = ''.join([i if ord(i) < 128 else 'Butt' for i in matchup["team_name"] ])
+		
+		# build list of team names
+		if matchup["team_name"] not in team_name_list:
+			team_name_list.append(matchup["team_name"])
+		
+		# get max completed week 
+		if int(matchup['period_id'])-10 > max_week and matchup['is_final'] == 'y':
+			max_week = int(matchup['period_id'])-10
 		
 		# look for matchups flagged as current - this is what we want to work with for this_week
 		# for completed games, look for "is_final"==y"
@@ -282,13 +299,29 @@ def process_schedule_data(schedule_data):
 			# in all cases, make sure the period_id is properly assigned. This is a requirement to look up fantasy rosters. 
 			this_week[matchup["matchup_set"]]['period_id'] = matchup["period_id"]
 		
-		# start putting together a data set for completed weeks
-		# This can be used to generate graphs and stats for weekly scores. 
-		# key: period_id minus 10 (first period is 11, so this makes it "week 1")
-		# will need to return a second value from process_schedule_data
-		#if matchup["is_final"] == "y":
+	# start putting together a data set for completed weeks
+	# this variable has an empty list for every week (0-23)
+	score_chart_data = [[0 for i in range(12)] for i in range(max_week)]
+	
+	#sort the list of team names alphabetically
+	team_name_list.sort()
+	
+	for matchup in schedule_data:
+		# remove fields I don't need for the chart
+		# the fields we KEEP are:
+		# team_name
+		# period_name
+		# team_points
+		# period_id - subtract 10 because week 1 is period_id=11
+		if matchup['is_final'] == 'y':
+			period_id = int(matchup['period_id'])
+			# insert team's score (when alphabeticaly sorted) into right column in score table
+			score_chart_data[period_id-11][team_name_list.index(matchup['team_name'])] = int(matchup['team_points'])	
 		
-	return this_week
+	# insert list of team names into score chart data array 
+	score_chart_data.insert(0,team_name_list)
+
+	return this_week, score_chart_data
 	
 # grab a roster json object from mlb and return it 
 # needs a fantasy baseball team id and the period id. 
@@ -398,27 +431,146 @@ def print_lineup(lineup, h_o_a):
 				printed_players.append(lineup[player]['name'])
 	print '</details></td>'
 
+def print_headers(jscode):
+	# show some HTML while the rest of the script loads data - that's why this is up here. 
+	print "Content-type: text/html\n\n";
+	print "<html><head>";
+	
+	print """
+	<script src="https://www.google.com/jsapi" type="text/javascript"></script>
+	<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+	  <script type="text/javascript">
+	    google.charts.load('current', {'packages':['corechart']});
+      	google.charts.setOnLoadCallback(drawChart);
+	    
+	    function drawChart() {
+	      %(jscode)s
+	      
+	      var chart = new google.visualization.LineChart(document.getElementById('table_div_jscode'));
+	      
+	      var options = {
+	          title: 'Fantasy Baseball Points Back (Lower = Better)',
+	          curveType: 'function',
+	          legend: { position: 'none' },
+	          chartArea: {left:40,top:40,width:'95%%',height:'90%%'},
+	          hAxis: { viewWindowMode: 'maximized',
+	          			minValue: '1', 
+	          			viewWindow: {min:'1'}},
+	          vAxis: { viewWindowMode: 'maximized'},
+	          
+       		 };
+        
+	      chart.draw(jscode_data, options);
+	      
+	    }
+	  </script>
+	""" % vars()
+	
+	print "<link rel='stylesheet' type='text/css' href='style.css'>";
+	print "<title>MLB.com Fantasy Is Garbage On Mobile</title>";
+	print '<meta charset="utf-8" />'
+	print '<meta name="viewport" content="initial-scale=1.0; maximum-scale=1.0; width=device-width;">';
+	print "</head><body>";
+	print '<div class="table-title"> <h3>A-R.I.M.P.J CURRENT SCORES <br> Team Points are WEEKLY<br>Player Points are TODAY</h3> </div>'
+
+# from here: http://stackoverflow.com/questions/5655708/python-most-elegant-way-to-intersperse-a-list-with-an-element
+def intersperse(seq, value):
+    res = [value] * (2 * len(seq))
+    res[::2] = seq
+    return res
+
+#apologies to anyone trying to figure out how this works. 
+def print_google_chart(score_chart_data):
+
+	# grab team names out of this array			
+	team_names = score_chart_data[0]
+
+	# remove first row because it's a list of strings (team names)
+	del score_chart_data[0]
+
+	# build data table legend info. 
+	description = [(team_names[x],"number",team_names[x]) for x in range(len(team_names))]
+	# insert blank rows for Google Chart annotations
+	description =  intersperse(description, '')
+
+	# promising troubleshooting http://stackoverflow.com/questions/27944921/how-to-use-custom-properties-with-python-google-charts-aviz-api-py
+	for item in description: 
+		# detect empty strings http://stackoverflow.com/questions/9573244/most-elegant-way-to-check-if-the-string-is-empty-in-python
+		if not item:
+			# build annotation columns for Google Charts
+			description[description.index(item)] = (description[description.index(item)-1][0] + str('-anno'),"string","",dict({'type':'string', 'role':'annotation'}))
+
+	# new list to be populated with rows from score_chart_data
+	completed_weeks = []
+	
+	for week in score_chart_data:
+		if week is not [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]:
+			completed_weeks.append(week)
+	
+	# calculate running points totals - doesn't include week in progress. 
+	for week in completed_weeks:
+		num_weeks = len(completed_weeks)-1
+		
+		index = completed_weeks.index(week)
+		# insert blanks for Google Chart annotations
+		week = intersperse(week, '')
+		
+		completed_weeks[index] = week
+		
+		if index > 0:
+			for team_score in week:
+				if team_score <> '':
+					# add this week's points to last week's points if week > 0
+					completed_weeks[index][week.index(team_score)] = team_score + completed_weeks[index-1][week.index(team_score)]
+
+	# now calculate points back. Doesn't include the week in progress. 
+	points_back = completed_weeks	
+	for week in points_back: 
+		
+		max_week = max(filter(bool,week))
+		
+		# since every week is a running total, subtracting this week's team_points
+		# from max_week gives us points_back for every team. 
+		for team_points in week:
+			if team_points <> '':
+				points_back[points_back.index(week)][week.index(team_points)] = max_week - team_points
+			if team_points == '' and points_back.index(week) == len(points_back)-1:
+				points_back[points_back.index(week)][week.index(team_points)] = team_names[(week.index(team_points)-1)/2]
+		week.insert(0,"Week " + str(points_back.index(week)+1))
+	
+	# insert a row for the Week
+	description.insert(0, ("Week","string","Week"))
+	# set up Google Charts gviz_api chart info. 
+	data_table = gviz_api.DataTable(description)
+	data_table.LoadData(points_back)
+	
+	# Create a JavaScript code string.
+	team_names = list(itertools.chain.from_iterable(zip(team_names,[s + '-anno' for s in team_names])))
+	team_names.insert(0,'Week')
+	
+	# create the Java code to hide in the HTML headers to call the chart. 
+	jscode = data_table.ToJSCode("jscode_data", columns_order=(team_names ), )
+	
+	# now print HTML headers; these are formatted with Google Charts API stuff. 
+	print_headers(jscode)
+
+
 ###################################################
 # START OF THE MEAT'N'POTATOES PART OF THE SCRIPT #
 ###################################################
-
-# show some HTML while the rest of the script loads data - that's why this is up here. 
-print "Content-type: text/html\n\n";
-print "<html><head>";
-print "<link rel='stylesheet' type='text/css' href='style.css'>";
-print "<title>MLB.com Fantasy Is Garbage On Mobile</title>";
-print '<meta charset="utf-8" />'
-print '<meta name="viewport" content="initial-scale=1.0; maximum-scale=1.0; width=device-width;">';
-print "</head><body>";
-print '<div class="table-title"> <h3>A-R.I.M.P.J CURRENT SCORES <br> Team Points are WEEKLY<br>Player Points are TODAY</h3> </div>'
 
 # get fantasy baseball league schedule data from MLB 
 schedule_data = get_schedule_data(league_id)
 timing_log.append(['step 1 (after schedule data grab): ' + str(datetime.datetime.now() - start_time)])
 
-# populate this_week with some initial data from 
-this_week = process_schedule_data(schedule_data)
+# populate this_week with some initial data from the schedule
+# also, get data to print a fancy chart. 
+this_week, score_chart_data = process_schedule_data(schedule_data)
 timing_log.append(['step 2 (after process schedule data): ' + str(datetime.datetime.now() - start_time)])
+
+# print google chart 
+if show_chart:
+	print_google_chart(score_chart_data)
 
 # get list of real (non-fantasy) games being played today
 gid_list = get_todays_gid_xml_blob()
@@ -440,49 +592,56 @@ pp.pprint(super_boxscore)
 print '-->'
 '''
 
-#===========PUT CONTENT BELOW THIS POINT
-print '<table class="table-fill"> <thead> <tr> <th class="text-right" width="300px">Away</th> <th class="text-left" width="300px">Home</th> </tr> </thead>'
-
-for matchup in this_week:
-	# row header
-	print '<tbody class="table-hover"> <tr>'
+# quickly turn on or off all the output for debugging
+if 1==1:
+	#===========PUT CONTENT BELOW THIS POINT
+	print '<table class="table-fill"> <thead> <tr> <th class="text-right" width="300px">Away</th> <th class="text-left" width="300px">Home</th> </tr> </thead>'
 	
-	# away team data
-	print '<td class="text-right" width="300px">'
-	print '<summary><a href="http://www.mlb.com/mlb/fantasy/fb/team/index.jsp?team_id=' + str(this_week[matchup]['away_team']) + '">'
-	print this_week[matchup]['away_name']
-	print '</a>'
-	print ' - <b>' + str(this_week[matchup]['away_points']) + '</b></summary>'
-	print_lineup(this_week[matchup]['away_lineup'], 'away')
+	for matchup in this_week:
+		# row header
+		print '<tbody class="table-hover"> <tr>'
+		
+		# away team data
+		print '<td class="text-right" width="300px">'
+		print '<summary><a href="http://www.mlb.com/mlb/fantasy/fb/team/index.jsp?team_id=' + str(this_week[matchup]['away_team']) + '">'
+		print this_week[matchup]['away_name']
+		print '</a>'
+		print ' - <b>' + str(this_week[matchup]['away_points']) + '</b></summary>'
+		print_lineup(this_week[matchup]['away_lineup'], 'away')
+		
+		# home team data
+		print '<td class="text-left" width="300px">'
+		print '<summary><b>' + str(this_week[matchup]['home_points']) + ' - </b>'
+		print '<a href="http://www.mlb.com/mlb/fantasy/fb/team/index.jsp?team_id=' + str(this_week[matchup]['home_team']) + '">'
+		print this_week[matchup]['home_name']
+		print '</a></summary>'
+		print_lineup(this_week[matchup]['home_lineup'], 'home')	
+		print '</td>'
+		
+		# row closer
+		print '</tr>'
 	
-	# home team data
-	print '<td class="text-left" width="300px">'
-	print '<summary><b>' + str(this_week[matchup]['home_points']) + ' - </b>'
-	print '<a href="http://www.mlb.com/mlb/fantasy/fb/team/index.jsp?team_id=' + str(this_week[matchup]['home_team']) + '">'
-	print this_week[matchup]['home_name']
-	print '</a></summary>'
-	print_lineup(this_week[matchup]['home_lineup'], 'home')	
-	print '</td>'
+	print '</tbody> </table>';
 	
-	# row closer
-	print '</tr>'
-
-print '</tbody> </table>';
-
-print '<div> <h4>REFRESH PAGE TO RELOAD SCORES</h4> </div>'
-
-print '<div> <h4><a class="footer" href="https://github.com/b-neufeld/mlb-fantasy-checker">about & source</a></h4> </div>'
-
-timing_log.append(['step 4 (end of script): ' + str(datetime.datetime.now() - start_time)])
-
-print '<!--'
-pp = pprint.PrettyPrinter(indent=1)
-pp.pprint(timing_log)
-print '-->'
-
-print '<div> <h4> Loaded in ' + str(datetime.datetime.now() - start_time) + '</h4></div>'
-
-
-
-#===========PUT CONTENT ABOVE THIS POINT
-print "</body></html>";
+	print '<div> <h4>REFRESH PAGE TO RELOAD SCORES</h4> </div>'
+	
+	print '<div> <h4><a class="footer" href="https://github.com/b-neufeld/mlb-fantasy-checker">about & source</a></h4> </div>'
+	
+	timing_log.append(['step 4 (end of script): ' + str(datetime.datetime.now() - start_time)])
+	
+	print '<!--'
+	pp = pprint.PrettyPrinter(indent=1)
+	pp.pprint(timing_log)
+	print '-->'
+	
+	print '<div> <h4> Loaded in ' + str(datetime.datetime.now() - start_time) + '</h4></div>'
+	
+	# This div is where the Google Chart is served to. 
+	if show_chart:
+		print """
+		
+		    <div id="table_div_jscode" style="width: 100%; height: 600px" ></div>
+		 """
+	
+	#===========PUT CONTENT ABOVE THIS POINT
+	print "</body></html>";
