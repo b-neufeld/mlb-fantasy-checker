@@ -489,14 +489,14 @@ def print_google_chart(score_chart_data):
 
 	# build data table legend info. 
 	description = [(team_names[x],"number",team_names[x]) for x in range(len(team_names))]
-
+	# insert blank rows for Google Chart annotations
 	description =  intersperse(description, '')
 
 	# promising troubleshooting http://stackoverflow.com/questions/27944921/how-to-use-custom-properties-with-python-google-charts-aviz-api-py
 	for item in description: 
-
 		# detect empty strings http://stackoverflow.com/questions/9573244/most-elegant-way-to-check-if-the-string-is-empty-in-python
 		if not item:
+			# build annotation columns for Google Charts
 			description[description.index(item)] = (description[description.index(item)-1][0] + str('-anno'),"string","",dict({'type':'string', 'role':'annotation'}))
 
 	all_zeros = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -506,8 +506,6 @@ def print_google_chart(score_chart_data):
 		if week is not all_zeros:
 			completed_weeks.append(week)
 	
-	formatted_weeks = []
-
 	# calculate running points totals - doesn't include week in progress. 
 	for week in completed_weeks:
 		num_weeks = len(completed_weeks)-1
@@ -572,7 +570,6 @@ timing_log.append(['step 2 (after process schedule data): ' + str(datetime.datet
 # print google chart 
 if show_chart:
 	print_google_chart(score_chart_data)
-
 
 # get list of real (non-fantasy) games being played today
 gid_list = get_todays_gid_xml_blob()
