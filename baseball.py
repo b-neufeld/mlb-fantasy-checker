@@ -491,31 +491,20 @@ def print_google_chart(score_chart_data):
 	description = [(team_names[x],"number",team_names[x]) for x in range(len(team_names))]
 
 	description =  intersperse(description, '')
-	#print description
+
 	# promising troubleshooting http://stackoverflow.com/questions/27944921/how-to-use-custom-properties-with-python-google-charts-aviz-api-py
 	for item in description: 
-		#print 'item', item, 'description', description.index(item)
+
 		# detect empty strings http://stackoverflow.com/questions/9573244/most-elegant-way-to-check-if-the-string-is-empty-in-python
 		if not item:
-			#print 'hello', description.index(item), description[description.index(item)-1]
 			description[description.index(item)] = (description[description.index(item)-1][0] + str('-anno'),"string","",dict({'type':'string', 'role':'annotation'}))
-			#description[description.index(item)] = "{type:'string', role:'annotation'}"
-			#description.insert(0, ("annotation","string","annotation"))
-	
-	#print description
 
 	all_zeros = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 	completed_weeks = []
 	
 	for week in score_chart_data:
 		if week is not all_zeros:
-			#print sizeof(week)
-			#print week, score_chart_data.index(week)
-			# add in the spacers for Google Charts annotations	
-			#print week
 			completed_weeks.append(week)
-	
-	#print completed_weeks
 	
 	formatted_weeks = []
 
@@ -524,73 +513,42 @@ def print_google_chart(score_chart_data):
 		num_weeks = len(completed_weeks)-1
 		
 		index = completed_weeks.index(week)
-		#print index
 		
 		week = intersperse(week, '')
-		
-		#print week
 		
 		completed_weeks[index] = week
 		
 		if index > 0:
 			for team_score in week:
-				#if isinstance(team_score, int):
 				if team_score <> '':
-					#print team_score, week.index(team_score), completed_weeks[index][week.index(team_score)]
-					#if week.index(team_score) > 0:
 					# add this week's points to last week's points if week > 0
 					completed_weeks[index][week.index(team_score)] = team_score + completed_weeks[index-1][week.index(team_score)]
-				#if team_score == '' and index == num_weeks:
-				#	print week
-	
-	# moved from preceeding for loop
-	#week.insert(0,"Week " + str(completed_weeks.index(week)+1))
-			
-	#print completed_weeks		
-				
+
 	# now calculate points back. Doesn't include the week in progress. 
 	points_back = completed_weeks	
 	for week in points_back: 
 		
-		#max_week = max(filter(bool,week[1:]))
 		max_week = max(filter(bool,week))
-		
-		#print week, max_week
 		
 		# since every week is a running total, subtracting this week's team_points
 		# from max_week gives us points_back for every team. 
 		for team_points in week:
 			if team_points <> '':
-			#if not team_points:
 				points_back[points_back.index(week)][week.index(team_points)] = max_week - team_points
 			if team_points == '' and points_back.index(week) == len(points_back)-1:
-				#print week.index(team_points)
 				points_back[points_back.index(week)][week.index(team_points)] = team_names[(week.index(team_points)-1)/2]
 		week.insert(0,"Week " + str(points_back.index(week)+1))
-	
-	#print points_back
-	#print team_names
-	
 	
 	# insert a row for the Week
 	description.insert(0, ("Week","string","Week"))
 	# set up Google Charts gviz_api chart info. 
 	data_table = gviz_api.DataTable(description)
-	#print points_back
 	data_table.LoadData(points_back)
-	#print data_table.ToJSCode("jscode_data", columns_order=(team_names ), )
-	
-	#print description
 	
 	# Create a JavaScript code string.
 	team_names = list(itertools.chain.from_iterable(zip(team_names,[s + '-anno' for s in team_names])))
 	team_names.insert(0,'Week')
-	#print team_names
-	# this is what I need to buid.... I think. 
-	# YES, YES, YES  --> TODO TODO TODO WORK ON BUILDING THIS PROPER TEAM NAMES STRING. 
-	#team_names = ['Week', u'2 n da Posey,1 n da Pujol', '2 n da Posey,1 n da Pujol-anno', u"Can't Cutch This", 'anno2', u'Cruz Missiles', 'anno3', u'Lick My Pujols', 'anno4', u'Majestic Beavers', 'anno5', u"Melvin doesn't like a BJ", 'anno6', u'Puig Destroyer', 'anno7', u'SMELL THE GLOVE', 'anno8', u'The Bonairs 2000', 'anno9', u'TrouserTrout', 'anno10', u'Tulogit to Quit', 'anno11', u'Votto649', 'anno12']
 	
-	#print points_back
 	# create the Java code to hide in the HTML headers to call the chart. 
 	jscode = data_table.ToJSCode("jscode_data", columns_order=(team_names ), )
 	
