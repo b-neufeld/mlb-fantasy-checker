@@ -4,7 +4,7 @@ to display stats for your MLB.com fantasy baseball league.
 
 MLB Better Fantasy Stats by Brahm Neufeld
 
-#Update 2017: I think this is now obsolete, as MLB has shut down their fantasy baseball program and redirected all users to Yahoo or other platforms. BN
+# Update 2017: I think this is now obsolete, as MLB has shut down their fantasy baseball program and redirected all users to Yahoo or other platforms. BN
 
 I believe this project complies with MLB.com's copyright terms posted here:
 http://gdx.mlb.com/components/copyright.txt
